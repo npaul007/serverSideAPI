@@ -1,5 +1,5 @@
 const http  = require('http');
-const querystring = require('querystring');
+const url = require('url');
 const bible = require('./bible');
 const PORT = 3000;
 
@@ -9,16 +9,50 @@ http://localhost:3000/bibleapi?&book=%22foo%22&chapter=%22bar%22&verses=[1]
 
 let serverRequestHandler = function(request,response) {
     try{
-        let paths = request.url.split("/")
-        let requestObj = querystring.parse( request.url.split("?")[1]);
+        let paths = url.parse(request.url).pathname.split("/")
+        let query = url.parse(request.url,true).query;
 
-        if( paths[1] === "bibleapi" && paths.length > 2 ) {
-            
+        if( paths[1] === "bibleapi" && paths.length > 2 ) {  
             switch(paths[2])
             {
                 case "books":
-                    let books = this.data.map( b => b.name );
-                    response.end(books.join("\n"));
+                    let books = {
+                        books:this.data.map( b => b.name )
+                    };
+                    response.end(JSON.stringify(books));
+                    break;
+                case "chapters":
+                    if( query.book )
+                    {
+                        let bookObj = this.data.find(b => {
+                            return (
+                                b && 
+                                b.name.toLowerCase().replace(/ /g,'') == query.book.toLowerCase().replace(/ /g,'')
+                            )
+                        });
+                        
+                        if( bookObj )
+                        {
+                            let chapters = {
+                                chapters: bookObj.chapters.map((c,i) => {
+                                    return i+1;
+                                })
+                            }
+                            
+                            response.end(JSON.stringify(chapters));
+                        }
+                        else
+                        {
+                            response.end("No such bible book");
+                        }
+                    }
+                    else
+                    {
+                        response.end("This endpoint requires a 'book' parameter");
+                    }
+                    break;
+                default:
+                    response.end("No such endpoint");
                     break;
             }    
         }
@@ -36,7 +70,7 @@ let initServer = function (data) {
     server.data = data;
 
     server.listen(PORT,'localhost', function() {
-        console.log(`Server listening on port ${PORT}`);
+        console.log(`Bible API Server listening on port ${PORT}`);
     });
 }
 
