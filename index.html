@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>King James Bible</title>
+        <style>
+            table{
+                border:2px solid black;
+            }
+            td {
+                border: 2px solid black;
+                cursor: pointer;
+            }
+        </style>
+    </head>
+    <body>
+       <h1>King James Bible</h1> 
+       <div style="display: flex;">
+            <div>
+                <table id="bookColumn">
+                    <tr>
+                        <th>Books</th>
+                    </tr>
+                </table>
+            </div>
+            <div>
+                <table id="chapterColumn">
+                    <tr>
+                        <th>Chapter</th>
+                    </tr>
+                </table>
+            </div>
+            <div>
+                <table id="verseColumn">
+                    <tr>
+                        <th>Verses</th>
+                    </tr>
+                </table>
+            </div>
+       </div>
+    </body>
+    <script>
+        let populateBookCol = function () {
+            fetch('/bibleapi/books').then(response =>{
+                let bookColumn = document.getElementById('bookColumn');
+                if( response.status == 200 ) {
+                    response.json().then(data => {
+                        let books = data.books;
+                        books.forEach(book => {
+                            let tr = document.createElement('tr');
+                            tr.innerHTML = `<td>${book}</td>`;
+                            bookColumn.appendChild(tr);
+                        });
+                    });
+                }
+            })
+            .catch(err => {
+                alert(err);
+            });
+        }
+
+       window.addEventListener("load",populateBookCol);
+    </script>
+</html>

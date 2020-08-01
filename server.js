@@ -3,6 +3,8 @@ const url = require('url');
 const bible = require('./bible');
 const PORT = 3000;
 
+const fs = require('fs');
+
 /*
 http://localhost:3000/bibleapi?&book=%22foo%22&chapter=%22bar%22&verses=[1]
 */
@@ -72,7 +74,9 @@ let serverRequestHandler = function(request,response) {
             }    
         }
         else {
-            response.end("Bad request - invalid URL");
+            let index = fs.readFileSync(`./index.html`);
+            response.writeHead(200 , {'Content-Type':'text/html'});
+            response.end(index);
         }
     } catch(err) {
         response.end(`Failed to process request due to error: ${err}`);
