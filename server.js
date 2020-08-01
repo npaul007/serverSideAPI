@@ -27,7 +27,7 @@ let serverRequestHandler = function(request,response) {
                         let bookObj = this.data.find(b => {
                             return (
                                 b && 
-                                b.name.toLowerCase().replace(/ /g,'') == query.book.toLowerCase().replace(/ /g,'')
+                                b.name.toLowerCase().replace(/ /g,'') == query.book.toLowerCase()
                             )
                         });
                         
@@ -49,6 +49,21 @@ let serverRequestHandler = function(request,response) {
                     else
                     {
                         response.end("This endpoint requires a 'book' parameter");
+                    }
+                    break;
+
+                case "verses":
+                    if( query.book && query.chapter )
+                    {
+                        let book = this.data.find(b => b.name.toLowerCase().replace(/ /g,'') == query.book.toLowerCase());
+                        let chapter = {
+                            chapter:book.chapters[query.chapter-1]
+                        };
+                        response.end(JSON.stringify(chapter));
+                    }
+                    else
+                    {
+                        response.end("This endpoint requires a 'book' and 'chapter' parameter" );
                     }
                     break;
                 default:
