@@ -12,6 +12,13 @@
                 border: 2px solid black;
                 cursor: pointer;
             }
+            .active-book, .active-chapter{
+                background-color: chartreuse;
+            }
+
+            #verseColumn {
+                width: 200px;
+            }
         </style>
     </head>
     <body>
@@ -41,6 +48,59 @@
        </div>
     </body>
     <script>
+
+        let chapterClickEvent = function () {
+            let chapterEls = chapterColumn.querySelectorAll('.chapter');
+            ( chapterEls !== null ) && chapterEls.forEach(el => el.classList.remove('active-chapter'));
+
+            this.classList.add('active-chapter');
+            chapterEls = null;
+        }
+
+        let populateChaptersCol = function (bookName) {
+            fetch(`bibleapi/chapters?book=${bookName}`).then(response => {
+                let chapterColumn = document.getElementById('chapterColumn');
+                let chapterEls = chapterColumn.querySelectorAll('.chapter');
+                ( chapterEls !== null ) && chapterEls.forEach(el => el.remove());
+                chapterEls = null;
+                
+                if(response.status == 200) {
+                    response.json().then(data => {
+                        let chapters = data.chapters;
+                        chapters.forEach(chapter => {
+                            let tr = document.createElement('tr');
+                            tr.innerHTML = `<td>${chapter}</td>`;
+                            tr.classList.add('chapter');
+                            tr.setAttribute('data-chapter',chapter);
+                            tr.addEventListener('click',chapterClickEvent);
+
+                            chapterColumn.appendChild(tr);
+                            tr = null;
+                        });
+
+                        chapterColumn = null;
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
+                }
+            })
+            .catch(err =>{
+                console.log(err);
+            });
+        }
+
+        let bookClickEvent = function () {
+            let bookEls = document.querySelectorAll('.book');
+            if(bookEls !== null) {
+                bookEls.forEach(book => book .classList.remove('active-book'));
+            }
+            bookEls = null;
+
+            this.classList.add('active-book');
+            populateChaptersCol(this.attributes['data-book-name'].value);
+        }
+
         let populateBookCol = function () {
             fetch('/bibleapi/books').then(response =>{
                 let bookColumn = document.getElementById('bookColumn');
@@ -50,8 +110,17 @@
                         books.forEach(book => {
                             let tr = document.createElement('tr');
                             tr.innerHTML = `<td>${book}</td>`;
+                            tr.classList.add('book');
+                            tr.setAttribute('data-book-name',book.toLowerCase().replace(/ /g,''));
+                            tr.addEventListener('click',bookClickEvent);
+
                             bookColumn.appendChild(tr);
+                            tr = null;
                         });
+                        bookColumn = null;
+                    })
+                    .catch(err => {
+                        console.log(err);
                     });
                 }
             })
