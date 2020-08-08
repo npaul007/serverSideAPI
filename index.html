@@ -91,6 +91,10 @@
         }
 
         let populateChaptersCol = function (bookName) {
+            let verseRow = document.querySelector('.verse-row');
+            if( verseRow !== null ) {
+                verseRow.remove();
+            }
             fetch(`bibleapi/chapters?book=${bookName}`).then(response => {
                 let chapterColumn = document.getElementById('chapterColumn');
                 let chapterEls = chapterColumn.querySelectorAll('.chapter');
