@@ -15,30 +15,29 @@
             .active-book, .active-chapter{
                 background-color: chartreuse;
             }
-
             #verseColumn {
-                width: 200px;
+                width: 500px;
             }
         </style>
     </head>
     <body>
        <h1>King James Bible</h1> 
        <div style="display: flex;">
-            <div>
+            <div class="table-container">
                 <table id="bookColumn">
                     <tr>
                         <th>Books</th>
                     </tr>
                 </table>
             </div>
-            <div>
+            <div class="table-container">
                 <table id="chapterColumn">
                     <tr>
                         <th>Chapter</th>
                     </tr>
                 </table>
             </div>
-            <div>
+            <div class="table-container">
                 <table id="verseColumn">
                     <tr>
                         <th>Verses</th>
@@ -49,12 +48,46 @@
     </body>
     <script>
 
+        let populateVerseCol = function() {
+            let verseColumn = document.getElementById('verseColumn');
+            let selectedBook = document.querySelector('.active-book').attributes['data-book-name'].value;
+            let selectedChapter = document.querySelector('.active-chapter').attributes['data-chapter'].value;
+
+            fetch(`bibleapi/verses?book=${selectedBook}&chapter=${selectedChapter}`).then(response => {
+                if(response.status == 200) {
+                    response.json().then(data => {
+                        let chapters = data.chapter.map((v,i) => {
+                            return `${i+1}) ${v}`
+                        }) ;
+
+                        let verseRow = verseColumn.querySelector('.verse-row');
+                        if( verseRow !== null ) {
+                            verseRow.remove();
+                        }
+
+                        let tr = document.createElement('tr');
+                        tr.innerHTML = `<td>${chapters.join("")}<td>`;
+                        tr.classList.add('verse-row');
+
+                        verseColumn.appendChild(tr);
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
+                }
+            })
+            .catch(err => {
+                console.log(err);
+            });
+        }
+
         let chapterClickEvent = function () {
             let chapterEls = chapterColumn.querySelectorAll('.chapter');
             ( chapterEls !== null ) && chapterEls.forEach(el => el.classList.remove('active-chapter'));
 
             this.classList.add('active-chapter');
-            chapterEls = null;
+            
+            populateVerseCol();
         }
 
         let populateChaptersCol = function (bookName) {
